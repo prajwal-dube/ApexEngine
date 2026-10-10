@@ -113,7 +113,7 @@ flowchart TD
   Writer->>MongoDB: Transaction: book + orders + trades + receipt
   MongoDB-->>Writer: Majority commit
   Writer-->>Gateway: Durable receipt
-  Gateway->>MongoDB: Invalidate local copy; refill from primary
+  Gateway->>MongoDB: Invalidate local copy, refill from primary
   Gateway-->>Browser: HTTP 201 receipt
   MongoDB-->>Gateway: Change stream notification
   Gateway->>Gateway: Invalidate caches; emit symbol room update
