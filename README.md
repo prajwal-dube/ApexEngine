@@ -116,7 +116,7 @@ flowchart TD
   Gateway->>MongoDB: Invalidate local copy, refill from primary
   Gateway-->>Browser: HTTP 201 receipt
   MongoDB-->>Gateway: Change stream notification
-  Gateway->>Gateway: Invalidate caches; emit symbol room update
+  Gateway->>Gateway: Invalidate caches, emit symbol room update
   Gateway-->>Browser: book:update over persistent connection
 ```
 
