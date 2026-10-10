@@ -1,0 +1,22 @@
+{
+  "name": "@apexengine/backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --env-file-if-exists=.env --watch src/server.js",
+    "test": "node --test test/cache.test.js test/matching.test.js",
+    "test:integration": "node --test test/integration.test.js",
+    "benchmark": "node ../scripts/benchmark.mjs"
+  },
+  "dependencies": {
+    "cors": "2.8.5",
+    "express": "4.22.3",
+    "mongodb": "6.16.0",
+    "socket.io": "4.8.1"
+  },
+  "devDependencies": {
+    "socket.io-client": "4.8.1"
+  }
+}

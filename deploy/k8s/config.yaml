@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: apex-config, namespace: apexengine }
+data:
+  MONGO_URI: mongodb://mongo-0.mongo:27017/apexengine?replicaSet=rs0
+  ENGINE_URL: http://engine:4000
+  CORS_ORIGIN: http://localhost:8080
+  CACHE_ENABLED: "true"
+  LFU_CAPACITY: "4"
+  LRU_CAPACITY: "2"

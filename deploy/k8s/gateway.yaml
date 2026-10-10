@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata: { name: gateway, namespace: apexengine }
+spec:
+  selector: { app: gateway }
+  ports: [{ port: 4000, targetPort: 4000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: gateway, namespace: apexengine }
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  selector: { matchLabels: { app: gateway } }
+  template:
+    metadata: { labels: { app: gateway } }
+    spec:
+      terminationGracePeriodSeconds: 20
+      containers:
+        - name: gateway
+          image: apexengine-backend:local
+          imagePullPolicy: IfNotPresent
+          ports: [{ containerPort: 4000 }]
+          envFrom:
+            - configMapRef: { name: apex-config }
+            - secretRef: { name: apex-secret }
+          env: [{ name: ROLE, value: gateway }]
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: "1", memory: 512Mi }
+          startupProbe:
+            httpGet: { path: /health/ready, port: 4000 }
+            failureThreshold: 60
+            periodSeconds: 3
+          readinessProbe:
+            httpGet: { path: /health/ready, port: 4000 }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /health/live, port: 4000 }
+            periodSeconds: 10

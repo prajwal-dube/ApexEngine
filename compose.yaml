@@ -1,0 +1,55 @@
+services:
+  mongo:
+    image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports: ["127.0.0.1:27017:27017"]
+    volumes: ["mongo-data:/data/db"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ping:1}).ok"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+  mongo-init:
+    image: mongo:7.0
+    depends_on:
+      mongo: { condition: service_healthy }
+    entrypoint: ["bash", "/init.sh"]
+    volumes: ["./deploy/mongo-init.sh:/init.sh:ro"]
+    restart: "no"
+  engine:
+    build: { context: ., dockerfile: backend/Dockerfile }
+    environment: &backend-env
+      ROLE: engine
+      MONGO_URI: mongodb://mongo:27017/apexengine?replicaSet=rs0
+      INTERNAL_TOKEN: local-development-only-change-me
+      CORS_ORIGIN: http://localhost:8080
+      CACHE_ENABLED: "${CACHE_ENABLED:-true}"
+    depends_on:
+      mongo-init: { condition: service_completed_successfully }
+    healthcheck: &api-health
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    stop_grace_period: 20s
+  gateway:
+    build: { context: ., dockerfile: backend/Dockerfile }
+    environment:
+      <<: *backend-env
+      ROLE: gateway
+      ENGINE_URL: http://engine:4000
+    ports: ["127.0.0.1:4000:4000"]
+    depends_on:
+      engine: { condition: service_healthy }
+    healthcheck: *api-health
+    restart: unless-stopped
+    stop_grace_period: 20s
+  frontend:
+    build: { context: ., dockerfile: frontend/Dockerfile }
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      gateway: { condition: service_healthy }
+    restart: unless-stopped
+volumes:
+  mongo-data:

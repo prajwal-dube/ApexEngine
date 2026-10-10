@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata: { name: mongo, namespace: apexengine }
+spec:
+  clusterIP: None
+  selector: { app: mongo }
+  ports: [{ port: 27017 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: { name: mongo, namespace: apexengine }
+spec:
+  serviceName: mongo
+  replicas: 1
+  selector: { matchLabels: { app: mongo } }
+  template:
+    metadata: { labels: { app: mongo } }
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:7.0
+          args: ["--replSet", "rs0", "--bind_ip_all"]
+          ports: [{ containerPort: 27017 }]
+          resources:
+            requests: { cpu: 250m, memory: 256Mi }
+            limits: { cpu: "1", memory: 1Gi }
+          readinessProbe:
+            exec:
+              command: ["mongosh", "--quiet", "--eval", "if (!db.hello().isWritablePrimary) quit(1)"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          volumeMounts: [{ name: data, mountPath: /data/db }]
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: { requests: { storage: 1Gi } }
+---
+apiVersion: batch/v1
+kind: Job
+metadata: { name: mongo-init, namespace: apexengine }
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init
+          image: mongo:7.0
+          command: ["bash", "-c"]
+          args:
+            - |
+              set -e
+              until mongosh --host mongo-0.mongo:27017 --quiet --eval 'db.adminCommand({ping:1})'; do sleep 2; done
+              mongosh --host mongo-0.mongo:27017 --quiet --eval 'try { rs.status(); } catch(e) { if(e.code !== 94) throw e; rs.initiate({_id:"rs0",members:[{_id:0,host:"mongo-0.mongo:27017"}]}); }'
+              until mongosh --host mongo-0.mongo:27017 --quiet --eval 'if (!db.hello().isWritablePrimary) quit(1)'; do sleep 2; done

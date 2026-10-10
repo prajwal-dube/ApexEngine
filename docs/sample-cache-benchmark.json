@@ -1,0 +1,25 @@
+{
+  "kind": "LFU synchronous microbenchmark, not HTTP or database throughput",
+  "at": "2026-10-10T20:28:14.474Z",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "cpuCount": 9,
+  "totalMemoryBytes": 10451464192,
+  "operations": 500000,
+  "hits": 416800,
+  "elapsedMs": 22.868809,
+  "operationsPerSecond": 21863841,
+  "cpuUsageMicroseconds": {
+    "user": 27659,
+    "system": 0
+  },
+  "memory": {
+    "rss": 47771648,
+    "heapTotal": 13103104,
+    "heapUsed": 8396992,
+    "external": 3760251,
+    "arrayBuffers": 146611
+  },
+  "workload": "capacity=1000; round-robin 1200 keys; 50000 warmup gets; get only"
+}
