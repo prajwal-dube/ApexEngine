@@ -102,14 +102,14 @@ flowchart TD
 ### Write path: transaction first
 
 ```mermaid
-sequenceDiagram
+  sequenceDiagram
   participant Browser
   participant Gateway
   participant Writer
   participant MongoDB
   Browser->>Gateway: POST limit order + idempotency key
   Gateway->>Writer: Forward canonical order + internal token
-  Writer->>Writer: Bounded FIFO queue; validate and match
+  Writer->>Writer: Bounded FIFO queue, validate and match
   Writer->>MongoDB: Transaction: book + orders + trades + receipt
   MongoDB-->>Writer: Majority commit
   Writer-->>Gateway: Durable receipt
