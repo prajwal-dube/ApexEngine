@@ -700,7 +700,7 @@ Kubernetes can be listed as “deployment manifests / local deployment exercise�
 - [React state batching](https://react.dev/learn/queueing-a-series-of-state-updates)
 
 ## Resume Points
--- Eisystems Services (Eisystems Technologies) / AICTE Internship Portal | Software Engineering Intern
+# Eisystems Services (Eisystems Technologies) / AICTE Internship Portal | Software Engineering Intern
 May 2025 – July 2025
 - Coded a real-time data streaming pipeline and terminal dashboard using Node.js, Express, Socket.io, and React.
 - Designed an in-memory LFU cache tier from scratch using custom Hash Maps and Doubly Linked Lists to achieve deterministic O(1) lookup and eviction complexities.
