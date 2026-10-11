@@ -699,4 +699,12 @@ Kubernetes can be listed as “deployment manifests / local deployment exercise�
 - [Kubernetes horizontal autoscaling](https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)
 - [React state batching](https://react.dev/learn/queueing-a-series-of-state-updates)
 
+## Resume Points
+-- Eisystems Services (Eisystems Technologies) / AICTE Internship Portal | Software Engineering Intern
+May 2025 – July 2025
+- Coded a real-time data streaming pipeline and terminal dashboard using Node.js, Express, Socket.io, and React.
+- Designed an in-memory LFU cache tier from scratch using custom Hash Maps and Doubly Linked Lists to achieve deterministic O(1) lookup and eviction complexities.
+- Reduced MongoDB read operations by 99.93% (dropping to 0.0007 reads/request), cutting median execution latency by 61.7% (from 19.44 ms to 7.44 ms) and p99 tail latency down to 25.12 ms.
+- Expanded backend gateway capacity by 155.0% (scaling throughput from 457.41 to 1,166.61 requests/sec) with zero errors across a multi-stage Docker Compose container network.
+
 Read `docs/interview-guide.md` next, then trace `get`, `put`, one matching transaction, and the socket subscription path yourself.
