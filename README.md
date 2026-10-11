@@ -322,15 +322,14 @@ Malformed requests receive 400; a full demo book receives 422; missing orders re
 
 Each list has a dummy head and dummy tail. Real nodes are appended at the tail. The first real node after the head is the least recently accessed node in that frequency bucket.
 
+The implementation lives in [`backend/src/cache/lfu.js`](./backend/src/cache/lfu.js), with the sentinel-based list in [`backend/src/cache/list.js`](./backend/src/cache/list.js). `_promote(node)` unlinks the node from its current frequency bucket, removes the bucket if it becomes empty, increments the frequency, and appends the node to the next bucket's tail. If the emptied bucket was `minFreq`, the promoted node guarantees that `minFreq` advances to the next frequency.
+
 ### `get(key)`
 
 1. Look up the node using `entries`.
 2. If absent, report a miss (`undefined`).
-3. Remove the node from its current list by rewiring two neighbors.
-4. Delete the old frequency list if it became empty.
-5. If the old empty list was the minimum, advance `minFreq` by one.
-6. Increment the frequency and append the node to the new list's tail.
-7. Return its value.
+3. Call `_promote(node)` to move it to the next frequency and refresh its recency.
+4. Return its value.
 
 ### `put(key, value)`
 
