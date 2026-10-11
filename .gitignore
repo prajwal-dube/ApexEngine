@@ -4,3 +4,5 @@ frontend/dist/
 backend/.env
 coverage/
 benchmark-results*.json
+cache-on.json
+cache-off.json

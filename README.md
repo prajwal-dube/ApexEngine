@@ -601,11 +601,42 @@ API_URL=http://localhost:4000 RESULT_FILE=cache-off.json node scripts/load.mjs
 CACHE_ENABLED=true docker compose up -d --force-recreate engine gateway
 ```
 
+To run both measurements, restore cache-on even if a benchmark step fails, validate the active cache mode, and print a data-derived comparison:
+
+```bash
+node run-benchmarks.js
+```
+
+This cross-platform Node.js script writes `cache-on.json` and `cache-off.json` in the project root. Its mean database-read comparison is `databaseReadsDelta / successful requests` for each run, so it remains meaningful when successful request counts differ. It compares cache-off and cache-on p50/p95/p99 attempt latencies and reports throughput and errors for both runs. Both measurements must use the same API, duration, and concurrency; the summary is evidence from that run, not a guaranteed result or compensation claim.
+
+The script checks for a free host port for MongoDB, starting at 27017, and passes it to Compose as `MONGO_PORT`; set `MONGO_PORT` explicitly to pin a port. This avoids disrupting a local MongoDB that already occupies 27017.
+
 Set `CONCURRENCY=10` and `DURATION_SECONDS=15` or change both equally for each run. Use the direct gateway on port 4000 so before/after metrics come from one known process. For a multi-replica cluster, gather every process's counters rather than subtracting two randomly routed endpoint responses.
 
 Record hardware, runtime, dataset, concurrent traffic, duration, sample count and environment. `load.mjs` reports successful requests/sec, p50/p95/p99 completed-attempt latency, error rate, and book DB-read/cache-hit deltas. It caps retained latency samples at the first 200,000 completions. CPU/RAM in its output belong to the load-generator process; use `docker stats` or cluster tooling for server resources.
 
 A book-read reduction can be calculated as `(disabled book DB reads - enabled book DB reads) / disabled book DB reads × 100`, **only under comparable successful request counts/workloads**. Normalize DB reads per successful read when throughput differs. This still excludes other Mongo operations. Do not claim an arbitrary “85% database reduction.”
+
+#### Recorded HTTP benchmark
+
+One local run collected on **2026-10-11** using Docker Compose and `node run-benchmarks.js`:
+
+| Metric | Cache on | Cache off |
+|---|---:|---:|
+| Cache mode verified | Enabled | Disabled |
+| Duration / concurrency | 15 s / 10 workers | 15 s / 10 workers |
+| Attempts / successes / errors | 17,509 / 17,509 / 0 | 6,869 / 6,869 / 0 |
+| Successful throughput | 1,166.61 req/s | 457.41 req/s |
+| p50 attempt latency | 7.44 ms | 19.44 ms |
+| p95 attempt latency | 16.96 ms | 40.70 ms |
+| p99 attempt latency | 25.12 ms | 54.46 ms |
+| Gateway book DB reads | 12 | 6,869 |
+| Book DB reads per successful request | 0.0007 | 1.0000 |
+| Cache hits | 17,497 | 0 |
+
+Normalizing by successful requests gives `(1 - (12 / 17,509) / (6,869 / 6,869)) × 100 = 99.9315%` fewer **book reads per successful request** with cache enabled for this run. The observed cache-on p50, p95 and p99 were respectively 61.7518%, 58.3306% and 53.8682% lower than cache-off; successful throughput was 1,166.61 versus 457.41 requests/s. Both runs had zero request errors.
+
+This is a single local sample, not a statistically repeated experiment or production result. Both configurations used the same API URL, duration, and concurrency, but were run sequentially against recreated containers; throughput, latency, machine load, Mongo state and scheduling can vary. DB-read counters are gateway-local and count **book reads only**, not all MongoDB operations. The test does not measure server CPU/RAM or establish capacity, availability or production performance. Re-run with controlled repetitions before presenting the figures as a general performance claim.
 
 ## 16. What we achieved and what you can defend
 
